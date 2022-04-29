@@ -14,7 +14,7 @@ public enum GButton {
     DPAD_UP(KeyEvent.KEYCODE_DPAD_UP),
     DPAD_DOWN(KeyEvent.KEYCODE_DPAD_DOWN),
     DPAD_LEFT(KeyEvent.KEYCODE_DPAD_LEFT),
-    DPAP_RIGHT(KeyEvent.KEYCODE_DPAD_RIGHT);
+    DPAD_RIGHT(KeyEvent.KEYCODE_DPAD_RIGHT);
 
     int id;
 

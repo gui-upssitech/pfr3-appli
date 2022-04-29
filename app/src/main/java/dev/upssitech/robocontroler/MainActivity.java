@@ -1,6 +1,7 @@
 package dev.upssitech.robocontroler;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.MutableLiveData;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -21,12 +22,10 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String TAG = "GAME";
 
-    private TextView deviceNameView;
-    private TextView counterView;
-    private ProgressBar progressBarView;
-    private LinearLayout box;
+    private TextView dirView, speedView;
 
-    private int counter;
+    private MutableLiveData<Integer> speed;
+    private MutableLiveData<Dir> dir;
     private Gamepad gamepad;
 
     @Override
@@ -36,47 +35,39 @@ public class MainActivity extends AppCompatActivity {
 
         // Init other variables
 
-        counter = 0;
+        dir = new MutableLiveData<>(Dir.FORWARDS);
+        speed = new MutableLiveData<>(0);
+
+        dir.observe(this, newDir -> repaint());
+        speed.observe(this, newSpeed -> repaint());
+
         gamepad = new Gamepad();
 
         // Get view components
+        dirView = findViewById(R.id.dir);
+        speedView = findViewById(R.id.speed);
 
-        deviceNameView = findViewById(R.id.device);
-        counterView = findViewById(R.id.counter);
         repaint();
-
-        progressBarView = findViewById(R.id.progressBar);
-        progressBarView.setMin(0);
-        progressBarView.setMax(100);
-
-        box = findViewById(R.id.box);
 
         // Event management
 
-        gamepad.onButtonPressed(button -> {
-            Log.d(TAG, "onCreate: " + button);
+        gamepad.onJoystickMoved((side, x, y) -> {
+            if(side == GDirection.RIGHT) return;
 
-            if(button == GButton.RB) counter++;
-            if(button == GButton.LB) counter = Math.max(counter - 1, 0);
-            if(button == GButton.B) counter = 0;
-            repaint();
+            if(y > 80)  dir.setValue(Dir.BACKWARDS);
+            if(y < -80) dir.setValue(Dir.FORWARDS);
+            if(x < -80) dir.setValue(Dir.LEFT);
+            if(x > 80)  dir.setValue(Dir.RIGHT);
         });
 
-        gamepad.onTriggerMoved((dir, value) -> {
-            if(dir == GDirection.RIGHT) progressBarView.setProgress(value);
+        gamepad.onTriggerMoved((side, value) -> {
+            if(side == GDirection.RIGHT) speed.setValue(value);
         });
-
-        gamepad.onJoystickMoved(((joy, x, y) -> {
-            if(joy == GDirection.LEFT) {
-                box.setTranslationX(x);
-                box.setTranslationY(y);
-            }
-        }));
     }
 
     private void repaint() {
-        deviceNameView.setText(gamepad.getName());
-        counterView.setText(String.valueOf(counter));
+        dirView.setText(dir.getValue().toString());
+        speedView.setText("" + speed.getValue());
     }
 
     @Override
